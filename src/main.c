@@ -35,7 +35,7 @@ I've changed the original file - jujugogoom 2024-12-01
 
 #include "resource_dir.h" // utility header for SearchAndSetResourceDir
 
-#define BLANK 0
+#define BLANK_SPACE 0
 #define RAIL 1
 #define BUILDING 2
 #define STATION 3
@@ -62,7 +62,6 @@ void InitWorld()
 void ToggleLocation(int x, int y)
 {
 	int curr = world[x][y];
-	printf("Toggling %d\n", curr);
 	world[x][y] = (curr + 1) % 4;
 }
 
@@ -76,6 +75,8 @@ int main(void)
 	InitWindow(screenWidth, screenHeight, "Tester");
 	InitWorld();
 
+	const Vector2 WorldSizeVector = (const Vector2){WORLD_SIZE, WORLD_SIZE};
+	const Vector2 TotalSizeVector = (const Vector2){(WORLD_SIZE * GRID_SIZE), (WORLD_SIZE * GRID_SIZE)};
 	Camera2D camera = {0};
 	camera.zoom = 1.0f;
 	camera.rotation = 0.f;
@@ -100,7 +101,7 @@ int main(void)
 		{
 			Vector2 delta = GetMouseDelta();
 			delta = Vector2Scale(delta, -1.0f / camera.zoom);
-			camera.target = Vector2Add(camera.target, delta);
+			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), Vector2Zero(), Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth(), GetScreenHeight()}));
 		}
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -117,13 +118,19 @@ int main(void)
 		ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
 		BeginMode2D(camera);
+		// Calculate screen bounds to world bounds
+		Vector2 start = GetScreenToWorld2D((Vector2){0, 0}, camera);
+		Vector2 end = GetScreenToWorld2D((Vector2){GetScreenWidth(), GetScreenHeight()}, camera);
+		Vector2 worldStart = Vector2Clamp(Vector2Divide(start, (Vector2){GRID_SIZE, GRID_SIZE}), Vector2Zero(), WorldSizeVector);
+		Vector2 worldEnd = Vector2Clamp(Vector2Divide(end, (Vector2){GRID_SIZE, GRID_SIZE}), Vector2Zero(), WorldSizeVector);
 
-		for (int i = 0; i < WORLD_SIZE; i++)
+		// Only bother rendering parts of the world on screen
+		for (int i = worldStart.x; i < worldEnd.x; i++)
 		{
 			DrawLineV((Vector2){(float)GRID_SIZE * i, 0}, (Vector2){(float)GRID_SIZE * i, WORLD_SIZE * GRID_SIZE}, LIGHTGRAY);
-			for (int j = 0; j < WORLD_SIZE; j++)
+			for (int j = worldStart.y; j < worldEnd.y; j++)
 			{
-				if (i == 0)
+				if (i == (int)worldStart.x)
 				{
 					DrawLineV((Vector2){0, (float)GRID_SIZE * j}, (Vector2){WORLD_SIZE * GRID_SIZE, (float)GRID_SIZE * j}, LIGHTGRAY);
 				}
