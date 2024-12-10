@@ -128,9 +128,11 @@ int main(void)
 		// Update
 		//----------------------------------------------------------------------------------
 
+		const int currScreenWidth = GetScreenWidth();
+		const int currScreenHeight = GetScreenHeight();
 		// Update gui poisition
-		const Rectangle GuiDropdownBounds = (Rectangle){(GetScreenWidth() / 2) - 40, 10, 80, 24};
-		const Rectangle GuiDebugToggleBounds = (Rectangle){10, GetScreenHeight() - 30, 20, 20};
+		const Rectangle GuiDropdownBounds = (Rectangle){(currScreenWidth / 2) - 40, 10, 80, 24};
+		const Rectangle GuiDebugToggleBounds = (Rectangle){10, currScreenHeight - 30, 20, 20};
 
 		const Rectangle GuiBounds[] = {GuiDropdownBounds, GuiDebugToggleBounds};
 
@@ -152,14 +154,14 @@ int main(void)
 			if (wheel < 0)
 				scaleFactor = 1.0f / scaleFactor;
 			camera.zoom = Clamp(camera.zoom * scaleFactor, 0.125f, 64.0f);
-			camera.target = Vector2Clamp(camera.target, ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom}));
+			camera.target = Vector2Clamp(camera.target, ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){currScreenWidth / camera.zoom, currScreenHeight / camera.zoom}));
 		}
 
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
 		{
 			Vector2 delta = GetMouseDelta();
 			delta = Vector2Scale(delta, -1.0f / camera.zoom);
-			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom}));
+			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){currScreenWidth / camera.zoom, currScreenHeight / camera.zoom}));
 		}
 
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !CheckGuiCollision(GetMousePosition(), GuiBounds, 2) && !DropdownActive)
@@ -180,7 +182,7 @@ int main(void)
 		BeginMode2D(camera);
 		// Calculate screen bounds to world bounds
 		Vector2 start = GetScreenToWorld2D((Vector2){0, 0}, camera);
-		Vector2 end = GetScreenToWorld2D((Vector2){GetScreenWidth(), GetScreenHeight()}, camera);
+		Vector2 end = GetScreenToWorld2D((Vector2){currScreenWidth, currScreenHeight}, camera);
 		Vector2 worldStart = Vector2Clamp(Vector2Divide(start, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
 		Vector2 worldEnd = Vector2Clamp(Vector2Divide(end, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
 
@@ -227,9 +229,9 @@ int main(void)
 		if (DebugActive)
 		{
 			const char *fpsText = TextFormat("CURRENT FPS: %i", GetFPS());
-			DrawText(fpsText, GetScreenWidth() - (MeasureText(fpsText, 20) + 20), GetScreenHeight() - 30, 20, GREEN);
+			DrawText(fpsText, currScreenWidth - (MeasureText(fpsText, 20) + 20), currScreenHeight - 30, 20, GREEN);
 			const char *renderInfo = TextFormat("Rendering from x %d to %d; y %d to %d", (int)worldStart.x, (int)worldEnd.x, (int)worldStart.y, (int)worldEnd.y);
-			DrawText(renderInfo, GetScreenWidth() - (MeasureText(renderInfo, 20) + 20), GetScreenHeight() - 60, 20, GREEN);
+			DrawText(renderInfo, currScreenWidth - (MeasureText(renderInfo, 20) + 20), currScreenHeight - 60, 20, GREEN);
 		}
 		//----------------------------------------------------------------------------------
 
