@@ -126,13 +126,14 @@ int main(void)
 			if (wheel < 0)
 				scaleFactor = 1.0f / scaleFactor;
 			camera.zoom = Clamp(camera.zoom * scaleFactor, 0.125f, 64.0f);
+			camera.target = Vector2Clamp(camera.target, ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom}));
 		}
 
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
 		{
 			Vector2 delta = GetMouseDelta();
 			delta = Vector2Scale(delta, -1.0f / camera.zoom);
-			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth(), GetScreenHeight()}));
+			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom}));
 		}
 
 		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !CheckCollisionPointRec(GetMousePosition(), GuiDropdownBounds) && !DropdownActive)
@@ -155,6 +156,7 @@ int main(void)
 		Vector2 worldStart = Vector2Clamp(Vector2Divide(start, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
 		Vector2 worldEnd = Vector2Clamp(Vector2Divide(end, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
 
+		printf("Rendering from x %d to %d; y %d to %d\n", (int)worldStart.x, (int)worldEnd.x, (int)worldStart.y, (int)worldEnd.y);
 		// Only bother rendering parts of the world on screen
 		for (int i = worldStart.x; i < worldEnd.x; i++)
 		{
@@ -191,7 +193,10 @@ int main(void)
 
 		if (GuiDropdownBox(GuiDropdownBounds, TOGGLES, &SelectedMode, DropdownActive))
 			DropdownActive = !DropdownActive;
-		DrawText(TextFormat("CURRENT FPS: %i", GetFPS()), GetScreenWidth() - 220, GetScreenHeight() - 30, 20, GREEN);
+		char *fpsText = TextFormat("CURRENT FPS: %i", GetFPS());
+		DrawText(fpsText, GetScreenWidth() - (MeasureText(fpsText, 20) + 20), GetScreenHeight() - 30, 20, GREEN);
+		char *renderInfo = TextFormat("Rendering from x %d to %d; y %d to %d", (int)worldStart.x, (int)worldEnd.x, (int)worldStart.y, (int)worldEnd.y);
+		DrawText(renderInfo, GetScreenWidth() - (MeasureText(renderInfo, 20) + 20), GetScreenHeight() - 60, 20, GREEN);
 
 		// raygui: controls drawing
 		//----------------------------------------------------------------------------------
