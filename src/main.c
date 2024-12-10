@@ -77,8 +77,8 @@ int main(void)
 	InitWindow(screenWidth, screenHeight, "Tester");
 	InitWorld();
 
-	// guiControlExclusiveMode = true;
-	Rectangle GuiToggleGroupBounds = (Rectangle){(screenWidth / 2) - 160, 10, 80 * 4, 24};
+	Vector2 ZeroVector = Vector2Zero();
+	Rectangle GuiDropdownBounds = (Rectangle){(screenWidth / 2) - 40, 10, 80, 24};
 
 	const Vector2 WorldSizeVector = (const Vector2){WORLD_SIZE, WORLD_SIZE};
 	const Vector2 TotalSizeVector = (const Vector2){(WORLD_SIZE * GRID_SIZE), (WORLD_SIZE * GRID_SIZE)};
@@ -94,6 +94,7 @@ int main(void)
 	// layout_name: controls initialization
 	//----------------------------------------------------------------------------------
 	int SelectedMode = 0;
+	bool DropdownActive = false;
 	//----------------------------------------------------------------------------------
 
 	SetTargetFPS(1000);
@@ -131,13 +132,13 @@ int main(void)
 		{
 			Vector2 delta = GetMouseDelta();
 			delta = Vector2Scale(delta, -1.0f / camera.zoom);
-			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), Vector2Zero(), Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth(), GetScreenHeight()}));
+			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth(), GetScreenHeight()}));
 		}
 
-		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !CheckCollisionPointRec(GetMousePosition(), GuiToggleGroupBounds))
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !CheckCollisionPointRec(GetMousePosition(), GuiDropdownBounds) && !DropdownActive)
 		{
 			Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
-			Vector2 clicked = {mousePos.x / GRID_SIZE, mousePos.y / GRID_SIZE};
+			Vector2 clicked = Vector2Clamp((Vector2){mousePos.x / GRID_SIZE, mousePos.y / GRID_SIZE}, ZeroVector, WorldSizeVector);
 			world[(int)clicked.x][(int)clicked.y] = SelectedMode;
 		}
 
@@ -151,8 +152,8 @@ int main(void)
 		// Calculate screen bounds to world bounds
 		Vector2 start = GetScreenToWorld2D((Vector2){0, 0}, camera);
 		Vector2 end = GetScreenToWorld2D((Vector2){GetScreenWidth(), GetScreenHeight()}, camera);
-		Vector2 worldStart = Vector2Clamp(Vector2Divide(start, (Vector2){GRID_SIZE, GRID_SIZE}), Vector2Zero(), WorldSizeVector);
-		Vector2 worldEnd = Vector2Clamp(Vector2Divide(end, (Vector2){GRID_SIZE, GRID_SIZE}), Vector2Zero(), WorldSizeVector);
+		Vector2 worldStart = Vector2Clamp(Vector2Divide(start, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
+		Vector2 worldEnd = Vector2Clamp(Vector2Divide(end, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
 
 		// Only bother rendering parts of the world on screen
 		for (int i = worldStart.x; i < worldEnd.x; i++)
@@ -188,7 +189,8 @@ int main(void)
 
 		EndMode2D();
 
-		GuiToggleGroup((Rectangle){(screenWidth / 2) - 160, 10, 80, 24}, TOGGLES, &SelectedMode);
+		if (GuiDropdownBox(GuiDropdownBounds, TOGGLES, &SelectedMode, DropdownActive))
+			DropdownActive = !DropdownActive;
 		DrawText(TextFormat("CURRENT FPS: %i", GetFPS()), GetScreenWidth() - 220, GetScreenHeight() - 30, 20, GREEN);
 
 		// raygui: controls drawing
