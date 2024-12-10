@@ -156,7 +156,6 @@ int main(void)
 		Vector2 worldStart = Vector2Clamp(Vector2Divide(start, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
 		Vector2 worldEnd = Vector2Clamp(Vector2Divide(end, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
 
-		printf("Rendering from x %d to %d; y %d to %d\n", (int)worldStart.x, (int)worldEnd.x, (int)worldStart.y, (int)worldEnd.y);
 		// Only bother rendering parts of the world on screen
 		for (int i = worldStart.x; i < worldEnd.x; i++)
 		{
