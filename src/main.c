@@ -40,7 +40,9 @@ I've changed the original file - jujugogoom 2024-12-01
 #define BUILDING 2
 #define STATION 3
 
-#define GRID_SIZE 10
+#define TOGGLES "Empty;Rail;Building;Station"
+
+#define GRID_SIZE 32
 #define WORLD_SIZE 1000
 
 const int screenWidth = 680;
@@ -75,18 +77,26 @@ int main(void)
 	InitWindow(screenWidth, screenHeight, "Tester");
 	InitWorld();
 
+	// guiControlExclusiveMode = true;
+	Rectangle GuiToggleGroupBounds = (Rectangle){(screenWidth / 2) - 160, 10, 80 * 4, 24};
+
 	const Vector2 WorldSizeVector = (const Vector2){WORLD_SIZE, WORLD_SIZE};
 	const Vector2 TotalSizeVector = (const Vector2){(WORLD_SIZE * GRID_SIZE), (WORLD_SIZE * GRID_SIZE)};
 	Camera2D camera = {0};
 	camera.zoom = 1.0f;
 	camera.rotation = 0.f;
 
+	// Texture loading
+	Texture2D trackTex = LoadTexture("resources/track.png");
+	Texture2D buildingTex = LoadTexture("resources/building.png");
+	Texture2D stationTex = LoadTexture("resources/station.png");
+
 	// layout_name: controls initialization
 	//----------------------------------------------------------------------------------
-
+	int SelectedMode = 0;
 	//----------------------------------------------------------------------------------
 
-	SetTargetFPS(60);
+	SetTargetFPS(1000);
 	//--------------------------------------------------------------------------------------
 
 	// Main game loop
@@ -97,6 +107,26 @@ int main(void)
 		// TODO: Implement required update logic
 		//----------------------------------------------------------------------------------
 
+		float wheel = GetMouseWheelMove();
+		if (wheel != 0)
+		{
+			// Get the world point that is under the mouse
+			// Vector2 mouseWorldPos = GetScreenToWorld2D(GetMousePosition(), camera);
+
+			// Set the offset to where the mouse is
+			// camera.offset = Vector2Clamp(GetMousePosition(), Vector2Zero(), Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth(), GetScreenHeight()}));
+
+			// Set the target to match, so that the camera maps the world space point
+			// under the cursor to the screen space point under the cursor at any zoom
+			// camera.target = Vector2Clamp(mouseWorldPos, Vector2Zero(), Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth(), GetScreenHeight()}));
+
+			// Zoom increment
+			float scaleFactor = 1.0f + (0.25f * fabsf(wheel));
+			if (wheel < 0)
+				scaleFactor = 1.0f / scaleFactor;
+			camera.zoom = Clamp(camera.zoom * scaleFactor, 0.125f, 64.0f);
+		}
+
 		if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
 		{
 			Vector2 delta = GetMouseDelta();
@@ -104,11 +134,11 @@ int main(void)
 			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), Vector2Zero(), Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth(), GetScreenHeight()}));
 		}
 
-		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !CheckCollisionPointRec(GetMousePosition(), GuiToggleGroupBounds))
 		{
 			Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
 			Vector2 clicked = {mousePos.x / GRID_SIZE, mousePos.y / GRID_SIZE};
-			ToggleLocation(clicked.x, clicked.y);
+			world[(int)clicked.x][(int)clicked.y] = SelectedMode;
 		}
 
 		// Draw
@@ -139,21 +169,27 @@ int main(void)
 					int currPos = world[i][j];
 					if (currPos == RAIL)
 					{
-						DrawText("R", i * GRID_SIZE, j * GRID_SIZE, 12, BLACK);
+						// DrawText("R", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
+						DrawTexture(trackTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
 					}
 					if (currPos == BUILDING)
 					{
-						DrawText("B", i * GRID_SIZE, j * GRID_SIZE, 12, BLACK);
+						// DrawText("B", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
+						DrawTexture(buildingTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
 					}
 					if (currPos == STATION)
 					{
-						DrawText("S", i * GRID_SIZE, j * GRID_SIZE, 12, BLACK);
+						// DrawText("S", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
+						DrawTexture(stationTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
 					}
 				}
 			}
 		}
 
 		EndMode2D();
+
+		GuiToggleGroup((Rectangle){(screenWidth / 2) - 160, 10, 80, 24}, TOGGLES, &SelectedMode);
+		DrawText(TextFormat("CURRENT FPS: %i", GetFPS()), GetScreenWidth() - 220, GetScreenHeight() - 30, 20, GREEN);
 
 		// raygui: controls drawing
 		//----------------------------------------------------------------------------------
@@ -166,6 +202,9 @@ int main(void)
 
 	// De-Initialization
 	//--------------------------------------------------------------------------------------
+	UnloadTexture(trackTex);
+	UnloadTexture(buildingTex);
+	UnloadTexture(stationTex);
 	CloseWindow(); // Close window and OpenGL context
 	//--------------------------------------------------------------------------------------
 
