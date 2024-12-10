@@ -56,7 +56,7 @@ void InitWorld()
 	{
 		for (int j = 0; j < WORLD_SIZE; j++)
 		{
-			world[i][j] = 0;
+			world[i][j] = 2;
 		}
 	}
 }
@@ -107,17 +107,13 @@ int main(void)
 
 	// Texture loading
 	//----------------------------------------------------------------------------------
-	Texture2D trackTex = LoadTexture("resources/track.png");
-	Texture2D buildingTex = LoadTexture("resources/building.png");
-	Texture2D stationTex = LoadTexture("resources/station.png");
-	GenTextureMipmaps(&trackTex);
-	GenTextureMipmaps(&buildingTex);
-	GenTextureMipmaps(&stationTex);
-
-	const Texture2D textures[] = {(Texture2D){0},
-								  trackTex,
-								  buildingTex,
-								  stationTex};
+	Texture2D textures[4];
+	textures[RAIL] = LoadTexture("resources/track.png");
+	textures[BUILDING] = LoadTexture("resources/building.png");
+	textures[STATION] = LoadTexture("resources/station.png");
+	GenTextureMipmaps(&textures[RAIL]);
+	GenTextureMipmaps(&textures[BUILDING]);
+	GenTextureMipmaps(&textures[STATION]);
 	//----------------------------------------------------------------------------------
 
 	// layout_name: controls initialization
@@ -235,9 +231,10 @@ int main(void)
 
 	// De-Initialization
 	//--------------------------------------------------------------------------------------
-	UnloadTexture(trackTex);
-	UnloadTexture(buildingTex);
-	UnloadTexture(stationTex);
+	for (int i = 1; i < 4; i++)
+	{
+		UnloadTexture(textures[i]);
+	}
 	CloseWindow(); // Close window and OpenGL context
 	//--------------------------------------------------------------------------------------
 
