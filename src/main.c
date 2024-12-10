@@ -193,9 +193,9 @@ int main(void)
 
 		if (GuiDropdownBox(GuiDropdownBounds, TOGGLES, &SelectedMode, DropdownActive))
 			DropdownActive = !DropdownActive;
-		char *fpsText = TextFormat("CURRENT FPS: %i", GetFPS());
+		const char *fpsText = TextFormat("CURRENT FPS: %i", GetFPS());
 		DrawText(fpsText, GetScreenWidth() - (MeasureText(fpsText, 20) + 20), GetScreenHeight() - 30, 20, GREEN);
-		char *renderInfo = TextFormat("Rendering from x %d to %d; y %d to %d", (int)worldStart.x, (int)worldEnd.x, (int)worldStart.y, (int)worldEnd.y);
+		const char *renderInfo = TextFormat("Rendering from x %d to %d; y %d to %d", (int)worldStart.x, (int)worldEnd.x, (int)worldStart.y, (int)worldEnd.y);
 		DrawText(renderInfo, GetScreenWidth() - (MeasureText(renderInfo, 20) + 20), GetScreenHeight() - 60, 20, GREEN);
 
 		// raygui: controls drawing
