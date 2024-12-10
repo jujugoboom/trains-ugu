@@ -110,6 +110,14 @@ int main(void)
 	Texture2D trackTex = LoadTexture("resources/track.png");
 	Texture2D buildingTex = LoadTexture("resources/building.png");
 	Texture2D stationTex = LoadTexture("resources/station.png");
+	GenTextureMipmaps(&trackTex);
+	GenTextureMipmaps(&buildingTex);
+	GenTextureMipmaps(&stationTex);
+
+	const Texture2D textures[] = {(Texture2D){0},
+								  trackTex,
+								  buildingTex,
+								  stationTex};
 	//----------------------------------------------------------------------------------
 
 	// layout_name: controls initialization
@@ -181,7 +189,7 @@ int main(void)
 		//----------------------------------------------------------------------------------
 		BeginMode2D(camera);
 		// Calculate screen bounds to world bounds
-		Vector2 start = GetScreenToWorld2D((Vector2){0, 0}, camera);
+		Vector2 start = GetScreenToWorld2D(ZeroVector, camera);
 		Vector2 end = GetScreenToWorld2D((Vector2){currScreenWidth, currScreenHeight}, camera);
 		Vector2 worldStart = Vector2Clamp(Vector2Divide(start, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
 		Vector2 worldEnd = Vector2Clamp(Vector2Divide(end, (Vector2){GRID_SIZE, GRID_SIZE}), ZeroVector, WorldSizeVector);
@@ -199,21 +207,22 @@ int main(void)
 				if (world[i][j] != 0)
 				{
 					int currPos = world[i][j];
-					if (currPos == RAIL)
-					{
-						// DrawText("R", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
-						DrawTexture(trackTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
-					}
-					if (currPos == BUILDING)
-					{
-						// DrawText("B", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
-						DrawTexture(buildingTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
-					}
-					if (currPos == STATION)
-					{
-						// DrawText("S", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
-						DrawTexture(stationTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
-					}
+					DrawTexture(textures[currPos], i * GRID_SIZE, j * GRID_SIZE, WHITE);
+					// if (currPos == RAIL)
+					// {
+					// 	// DrawText("R", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
+					// 	DrawTexture(trackTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
+					// }
+					// if (currPos == BUILDING)
+					// {
+					// 	// DrawText("B", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
+					// 	DrawTexture(buildingTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
+					// }
+					// if (currPos == STATION)
+					// {
+					// 	// DrawText("S", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
+					// 	DrawTexture(stationTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
+					// }
 				}
 			}
 		}
