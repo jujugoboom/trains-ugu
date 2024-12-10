@@ -208,21 +208,6 @@ int main(void)
 				{
 					int currPos = world[i][j];
 					DrawTexture(textures[currPos], i * GRID_SIZE, j * GRID_SIZE, WHITE);
-					// if (currPos == RAIL)
-					// {
-					// 	// DrawText("R", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
-					// 	DrawTexture(trackTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
-					// }
-					// if (currPos == BUILDING)
-					// {
-					// 	// DrawText("B", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
-					// 	DrawTexture(buildingTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
-					// }
-					// if (currPos == STATION)
-					// {
-					// 	// DrawText("S", i * GRID_SIZE, j * GRID_SIZE, GRID_SIZE, BLACK);
-					// 	DrawTexture(stationTex, i * GRID_SIZE, j * GRID_SIZE, WHITE);
-					// }
 				}
 			}
 		}
