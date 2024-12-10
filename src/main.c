@@ -67,6 +67,18 @@ void ToggleLocation(int x, int y)
 	world[x][y] = (curr + 1) % 4;
 }
 
+bool CheckGuiCollision(Vector2 point, const Rectangle bounds[], int count)
+{
+	for (int i = 0; i < count; i++)
+	{
+		if (CheckCollisionPointRec(point, bounds[i]))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -74,27 +86,37 @@ int main(void)
 {
 	// Initialization
 	//---------------------------------------------------------------------------------------
+	SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 	InitWindow(screenWidth, screenHeight, "Tester");
 	InitWorld();
 
-	Vector2 ZeroVector = Vector2Zero();
-	Rectangle GuiDropdownBounds = (Rectangle){(screenWidth / 2) - 40, 10, 80, 24};
+	// Const init
+	//----------------------------------------------------------------------------------
+	const Vector2 ZeroVector = Vector2Zero();
 
 	const Vector2 WorldSizeVector = (const Vector2){WORLD_SIZE, WORLD_SIZE};
 	const Vector2 TotalSizeVector = (const Vector2){(WORLD_SIZE * GRID_SIZE), (WORLD_SIZE * GRID_SIZE)};
+	//----------------------------------------------------------------------------------
+
+	// Camera init
+	//----------------------------------------------------------------------------------
 	Camera2D camera = {0};
 	camera.zoom = 1.0f;
 	camera.rotation = 0.f;
+	//----------------------------------------------------------------------------------
 
 	// Texture loading
+	//----------------------------------------------------------------------------------
 	Texture2D trackTex = LoadTexture("resources/track.png");
 	Texture2D buildingTex = LoadTexture("resources/building.png");
 	Texture2D stationTex = LoadTexture("resources/station.png");
+	//----------------------------------------------------------------------------------
 
 	// layout_name: controls initialization
 	//----------------------------------------------------------------------------------
 	int SelectedMode = 0;
 	bool DropdownActive = false;
+	bool DebugActive = false;
 	//----------------------------------------------------------------------------------
 
 	SetTargetFPS(1000);
@@ -105,8 +127,12 @@ int main(void)
 	{
 		// Update
 		//----------------------------------------------------------------------------------
-		// TODO: Implement required update logic
-		//----------------------------------------------------------------------------------
+
+		// Update gui poisition
+		const Rectangle GuiDropdownBounds = (Rectangle){(GetScreenWidth() / 2) - 40, 10, 80, 24};
+		const Rectangle GuiDebugToggleBounds = (Rectangle){10, GetScreenHeight() - 30, 20, 20};
+
+		const Rectangle GuiBounds[] = {GuiDropdownBounds, GuiDebugToggleBounds};
 
 		float wheel = GetMouseWheelMove();
 		if (wheel != 0)
@@ -136,7 +162,7 @@ int main(void)
 			camera.target = Vector2Clamp(Vector2Add(camera.target, delta), ZeroVector, Vector2Subtract(TotalSizeVector, (Vector2){GetScreenWidth() / camera.zoom, GetScreenHeight() / camera.zoom}));
 		}
 
-		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !CheckCollisionPointRec(GetMousePosition(), GuiDropdownBounds) && !DropdownActive)
+		if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && !CheckGuiCollision(GetMousePosition(), GuiBounds, 2) && !DropdownActive)
 		{
 			Vector2 mousePos = GetScreenToWorld2D(GetMousePosition(), camera);
 			Vector2 clicked = Vector2Clamp((Vector2){mousePos.x / GRID_SIZE, mousePos.y / GRID_SIZE}, ZeroVector, WorldSizeVector);
@@ -149,6 +175,8 @@ int main(void)
 
 		ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
 
+		// Draw 2d
+		//----------------------------------------------------------------------------------
 		BeginMode2D(camera);
 		// Calculate screen bounds to world bounds
 		Vector2 start = GetScreenToWorld2D((Vector2){0, 0}, camera);
@@ -189,17 +217,20 @@ int main(void)
 		}
 
 		EndMode2D();
-
-		if (GuiDropdownBox(GuiDropdownBounds, TOGGLES, &SelectedMode, DropdownActive))
-			DropdownActive = !DropdownActive;
-		const char *fpsText = TextFormat("CURRENT FPS: %i", GetFPS());
-		DrawText(fpsText, GetScreenWidth() - (MeasureText(fpsText, 20) + 20), GetScreenHeight() - 30, 20, GREEN);
-		const char *renderInfo = TextFormat("Rendering from x %d to %d; y %d to %d", (int)worldStart.x, (int)worldEnd.x, (int)worldStart.y, (int)worldEnd.y);
-		DrawText(renderInfo, GetScreenWidth() - (MeasureText(renderInfo, 20) + 20), GetScreenHeight() - 60, 20, GREEN);
+		//----------------------------------------------------------------------------------
 
 		// raygui: controls drawing
 		//----------------------------------------------------------------------------------
-
+		if (GuiDropdownBox(GuiDropdownBounds, TOGGLES, &SelectedMode, DropdownActive))
+			DropdownActive = !DropdownActive;
+		GuiToggle(GuiDebugToggleBounds, "#191#", &DebugActive);
+		if (DebugActive)
+		{
+			const char *fpsText = TextFormat("CURRENT FPS: %i", GetFPS());
+			DrawText(fpsText, GetScreenWidth() - (MeasureText(fpsText, 20) + 20), GetScreenHeight() - 30, 20, GREEN);
+			const char *renderInfo = TextFormat("Rendering from x %d to %d; y %d to %d", (int)worldStart.x, (int)worldEnd.x, (int)worldStart.y, (int)worldEnd.y);
+			DrawText(renderInfo, GetScreenWidth() - (MeasureText(renderInfo, 20) + 20), GetScreenHeight() - 60, 20, GREEN);
+		}
 		//----------------------------------------------------------------------------------
 
 		EndDrawing();
