@@ -56,7 +56,7 @@ void InitWorld()
 	{
 		for (int j = 0; j < WORLD_SIZE; j++)
 		{
-			world[i][j] = 2;
+			world[i][j] = 0;
 		}
 	}
 }
